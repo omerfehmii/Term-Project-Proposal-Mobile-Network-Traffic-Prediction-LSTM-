@@ -1,7 +1,7 @@
 # Mobile Network Traffic Prediction
 ## CSE 476/575 Term Project
 
-**Team:** Ömer Fehmi Çakıcı, Yiğit Doğan Aladağ
+**Team:** Ömer Fehmi Çakıcı, Yiğit Doğan Aladağ, Abdullah Sağlam
 
 ---
 
