@@ -1,0 +1,63 @@
+seed: 42
+
+data:
+  path: data/milan.csv
+  time_col: timestamp
+  value_col: traffic
+  cell_col: cell_id
+  cell_id: null          # set to a specific cell id if multiple are present
+  freq: "10min"          # resample frequency; e.g., "10min", "15min", "30min", "1H"
+  tz: null               # optionally set a timezone like "Europe/Rome"
+  resample_agg: sum      # sum | mean aggregation after resampling
+  log_transform: false   # apply log1p before scaling
+  imputation:
+    method: linear       # linear | seasonal
+    limit: 6             # maximum consecutive gaps to fill (in periods) for linear
+    seasonal_periods: 24 # seasonal window for mean-based fill or seasonality checks
+  outlier:
+    clip: true
+    iqr_factor: 3.0
+  scaler: standard       # standard | minmax | none
+
+window:
+  size: 144              # W: number of past steps (24h for 10min data)
+  horizon: 6             # H: number of future steps to predict
+  stride: 1              # step size for sliding windows
+  time_features: true    # add sin/cos encodings
+  add_weekend: true
+  include_value_lags: true
+
+split:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+rolling:
+  enabled: false
+  folds: 3
+  holdout: 0.15         # fraction used for each test fold
+  step: 0.05            # fraction to roll forward between folds
+
+baselines:
+  last: true
+  seasonal_naive: true
+  seasonal_lag: 144     # adjust based on freq (e.g., 144 for 10-min data to capture 24h seasonality)
+  linear_lags: 144      # number of lag features for linear regression baseline
+
+model:
+  type: lstm            # lstm | gru
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.1
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 64
+  epochs: 80
+  patience: 10
+  grad_clip: 1.0
+  device: auto         # auto | cpu | cuda
+
+logging:
+  output_dir: outputs
+  run_name: null       # optional custom name
+  save_plots: true

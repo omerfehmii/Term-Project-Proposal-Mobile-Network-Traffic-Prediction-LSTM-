@@ -1,0 +1,63 @@
+seed: 42
+
+data:
+  path: data/milan.csv
+  time_col: timestamp
+  value_col: traffic
+  cell_col: cell_id
+  cell_id: null
+  freq: "10min"
+  tz: null
+  resample_agg: sum
+  log_transform: false
+  imputation:
+    method: linear
+    limit: 6
+    seasonal_periods: 24
+  outlier:
+    clip: true
+    iqr_factor: 3.0
+  scaler: standard
+
+window:
+  size: 144
+  horizon: 6
+  stride: 1
+  time_features: true
+  add_weekend: true
+  include_value_lags: true
+
+split:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+rolling:
+  enabled: false
+  folds: 3
+  holdout: 0.15
+  step: 0.05
+
+baselines:
+  last: true
+  seasonal_naive: true
+  seasonal_lag: 144
+  linear_lags: 144
+
+model:
+  type: gru
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.1
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 64
+  epochs: 80
+  patience: 10
+  grad_clip: 1.0
+  device: auto
+
+logging:
+  output_dir: outputs
+  run_name: null
+  save_plots: true
