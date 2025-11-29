@@ -1,6 +1,6 @@
 # Mobile Network Traffic Prediction - Technical Report
 
-**Team:** Ömer Fehmi Çakıcı, Yiğit Doğan Aladağ
+**Team:** Ömer Fehmi Çakıcı, Yiğit Doğan Aladağ, Abdullah Sağlam
 **Course:** CSE 476/575
 
 ## 1. Introduction
