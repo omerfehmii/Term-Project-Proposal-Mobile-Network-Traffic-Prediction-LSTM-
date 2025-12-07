@@ -5,6 +5,7 @@ __pycache__/
 *.pyc
 outputs/
 data/
-archive/
+archive/*
+!archive/.gitkeep
 archive2/
 .ipynb_checkpoints/
