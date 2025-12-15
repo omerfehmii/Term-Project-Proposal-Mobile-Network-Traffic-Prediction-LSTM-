@@ -1,0 +1,51 @@
+seed: 42
+
+data:
+  path: data/milan.csv
+  time_col: timestamp
+  value_col: traffic
+  cell_col: cell_id
+  cell_id: 1
+  freq: "10min"
+  resample_agg: sum
+  log_transform: false
+  imputation:
+    method: linear
+    limit: 6
+  outlier:
+    clip: true
+    iqr_factor: 3.0
+  scaler: standard
+
+window:
+  size: 144
+  horizon: 6
+  stride: 1
+  time_features: true
+  add_weekend: true
+
+split:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+baselines:
+  last: true
+  seasonal_naive: true
+  seasonal_lag: 144
+
+model:
+  type: residual_lstm
+  hidden_size: 32
+  num_layers: 1
+  dropout: 0.0
+  lr: 0.01
+  batch_size: 16
+  epochs: 2
+  patience: 1
+  seasonal_lag: 144
+
+logging:
+  output_dir: outputs
+  run_name: hybrid_test_run
+  save_plots: false

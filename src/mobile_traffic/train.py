@@ -14,6 +14,7 @@ from .baselines import run_baselines
 from .data import apply_scaler, clip_outliers, impute_missing, load_series, make_scaler
 from .features import build_windows
 from .models.lstm import GRURegressor, LSTMRegressor, SequenceDataset, evaluate, make_loaders, train_model
+from .models.hybrid import ResidualLSTMRegressor
 from .utils import Metrics, ensure_dir, make_run_dir, plot_error_hist, plot_forecast, save_config_copy, select_device, set_seed
 
 
@@ -127,6 +128,19 @@ def run_single_split(series: pd.Series, config: Dict, run_dir: str, args) -> Dic
     use_time_features = bool(window_cfg.get("time_features", True))
     add_weekend = bool(window_cfg.get("add_weekend", True))
 
+
+    
+    # For Residual LSTM: Inject lagged series as covariate
+    model_type = model_cfg.get("type", "lstm").lower()
+    extra_covariates = None
+    if model_type == "residual_lstm":
+        # Create a shifted series aligned with the index
+        seasonal_lag = int(model_cfg.get("seasonal_lag", 24))
+        # shift(lag) moves data forward, so index T has value from T-lag
+        lagged_series = scaled_series.shift(seasonal_lag).bfill() # bfill to handle start
+        # Lagged series must be a DataFrame
+        extra_covariates = lagged_series.to_frame(name="lagged_value")
+
     # Build windows for scaled and raw series
     X_scaled, y_scaled, target_times = build_windows(
         scaled_series,
@@ -135,6 +149,7 @@ def run_single_split(series: pd.Series, config: Dict, run_dir: str, args) -> Dic
         stride=stride,
         use_time_features=use_time_features,
         add_weekend=add_weekend,
+        extra_covariates=extra_covariates,
     )
     X_raw, y_raw, _ = build_windows(
         series,
@@ -143,6 +158,8 @@ def run_single_split(series: pd.Series, config: Dict, run_dir: str, args) -> Dic
         stride=stride,
         use_time_features=use_time_features,
         add_weekend=add_weekend,
+        # We don't strictly need covariates for raw X unless measuring raw residuals, 
+        # but let's keep it consistent if needed later. For now, X_raw is used for splitting.
     )
     if len(X_scaled) == 0:
         raise ValueError("Not enough data to build any training windows. Adjust window/horizon or provide more data.")
@@ -173,6 +190,16 @@ def run_single_split(series: pd.Series, config: Dict, run_dir: str, args) -> Dic
             num_layers=num_layers,
             dropout=dropout,
             horizon=horizon,
+        )
+    elif model_type == "residual_lstm":
+        seasonal_lag = int(model_cfg.get("seasonal_lag", 24))
+        model = ResidualLSTMRegressor(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout=dropout,
+            horizon=horizon,
+            seasonal_lag=seasonal_lag,
         )
     else:
         model = LSTMRegressor(
