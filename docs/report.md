@@ -34,10 +34,10 @@ We engineered features to capture temporal dynamics:
 ### D. Model Architecture
 The proposed LSTM architecture consists of:
 *   **Input Layer:** A sequence of 144 past steps, each containing traffic volume and time features.
-*   **Hidden Layers:** Two stacked LSTM layers with **128 units** each.
-*   **Regularization:** A **Dropout rate of 0.1** was applied after LSTM layers to prevent overfitting.
+*   **Hidden Layers:** One LSTM layer with **32 units** (simplified from initial experiments to prevent overfitting).
+*   **Regularization:** No dropout was needed for this lighter architecture.
 *   **Output Layer:** Predicting a 6-step horizon (the next 60 minutes) of traffic volume.
-*   **Residual Hybrid Architecture (V2):** We also implemented a hybrid model that combines a **Seasonal Naive** baseline with an LSTM. The LSTM receives the **residuals** (current value - value from 24h ago) as input and predicts the future residual error. This allows the model to focus on learning complex non-seasonal deviations while relying on the solid baseline for the main pattern.
+*   **Residual Hybrid Architecture:** We also implemented a hybrid model that combines a **Seasonal Naive** baseline with an LSTM. The LSTM receives the **residuals** (current value - value from 24h ago) as input and predicts the future residual error. This allows the model to focus on learning complex non-seasonal deviations while relying on the solid baseline for the main pattern.
 
 ## 3. Experimental Results
 
@@ -52,18 +52,18 @@ Performance was measured using Mean Absolute Error (MAE), Root Mean Squared Erro
 
 | Model | MAE | RMSE | sMAPE (%) |
 | :--- | :---: | :---: | :---: |
-| **LSTM (Proposed)** | **2.14** | **3.53** | **15.33%** |
+| **LSTM (Proposed)** | **1.99** | **3.39** | **13.75%** |
 | Naive Baseline | 2.42 | 3.99 | 16.07% |
 | Seasonal Naive | 2.52 | 4.06 | 17.87% |
 | Linear Regression | 2.54 | 3.95 | 19.47% |
-| **Residual Hybrid (V2)** | **2.31** | **3.88** | **15.71%** |
+| Residual Hybrid | 2.31 | 3.88 | 15.71% |
 
 ### C. Discussion
 The LSTM model demonstrated superior performance across all metrics. Key observations include:
-1.  **Accuracy:** The LSTM model reduced the sMAPE by approximately **4.7%** relative to the Naive baseline.
-2.  **Pattern Recognition:** The model successfully learned critical temporal patterns, such as the "morning peak" and "night trough," which are essential for capacity scaling.
-3.  **Generalization:** Dropout regularization effectively prevented overfitting, ensuring stable performance on unseen data.
-4.  **Hybrid Model Performance:** The Residual Hybrid model (MAE 2.31) significantly outperformed traditional statistical baselines (MAE 2.52) by learning to correct their errors. However, the pure LSTM (MAE 2.14) still achieved the best overall performance, likely due to its flexibility in learning end-to-end representations without being constrained by a fixed seasonal assumption.
+1.  **Accuracy:** The simplified LSTM model achieved the best performance (MAE 1.99), reducing error by approximately **17%** compared to the Naive baseline.
+2.  **Model Complexity:** We observed that a smaller model (32 units, 1 layer) outperformed larger configurations (128 units, 2 layers), indicating that the simpler model generalized better to the traffic patterns without overfitting.
+3.  **Pattern Recognition:** The model successfully learned critical temporal patterns, such as the "morning peak" and "night trough," which are essential for capacity scaling.
+4.  **Hybrid Model Performance:** The Residual Hybrid model (MAE 2.31) significantly outperformed traditional statistical baselines (MAE 2.52) but could not beat the pure end-to-end learnt LSTM, which proved more flexible.
 
 ## 4. Conclusion
 
